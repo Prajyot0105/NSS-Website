@@ -619,7 +619,7 @@
     }
 
     function loadEvents() {
-      fetch('https://script.google.com/macros/s/PASTE_YOUR_EXEC_URL_HERE/exec?method=getEvents')
+      fetch('https://script.google.com/macros/s/AKfycbyO4YnyqFYflFfNrZ89et4ulPLCpXxrooeVPwpYKlM-2p7ls-y55KWrRnC7qohpjWUl-A/exec')
         .then(response => response.json())
         .then(events => displayEvents(events))
         .catch(err => alert('Error: ' + err));
