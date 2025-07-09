@@ -619,10 +619,10 @@
     }
 
     function loadEvents() {
-      google.script.run
-        .withSuccessHandler(displayEvents)
-        .withFailureHandler(showError)
-        .getEvents();
+      fetch('https://script.google.com/macros/s/PASTE_YOUR_EXEC_URL_HERE/exec?method=getEvents')
+        .then(response => response.json())
+        .then(events => displayEvents(events))
+        .catch(err => alert('Error: ' + err));
     }
 
     function displayEvents(events) {
