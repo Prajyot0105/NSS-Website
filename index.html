@@ -396,7 +396,7 @@
 
   <script>
     // ========== CONFIG ==========
-    const BACKEND_URL = "https://script.google.com/macros/s/AKfycbx_DjoC8usQYeSf3_eHgay6L92C6UZVBvIW-Q31tdmP4AtUbqGBzwYRVBgiVvpaFbWunQ/exec";
+    const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzQm6i4Dxtqf-g8Lu6XtJ78XBRyo7Z5vkWgDS32t9NslXeOSONv7ZbjOPvk61DD-Ou4dg/exec";
     // ============================
 
     let isEditMode = false;
@@ -422,7 +422,7 @@
 
     // === EVENT LIST ===
     function loadEvents() {
-      fetch(BACKEND_URL + '?action=getEvents')
+      fetch(BACKEND_URL + '?method=getEvents')
         .then(response => response.json())
         .then(events => displayEvents(Array.isArray(events) ? events : []))
         .catch(err => alert('Error loading events: ' + err));
@@ -481,7 +481,7 @@
       }
     }
     function editEvent(eventId) {
-      fetch(BACKEND_URL + '?action=getEventById&eventId=' + encodeURIComponent(eventId))
+      fetch(BACKEND_URL + '?method=getEventById&eventId=' + encodeURIComponent(eventId))
         .then(res => res.json())
         .then(eventObj => showCreateEventPage(true, eventObj))
         .catch(err => alert('Error: ' + err));
@@ -552,7 +552,7 @@
 
     // === ATTENDANCE ===
     function loadAttendanceList() {
-      fetch(BACKEND_URL + '?action=getAttendanceRecords')
+      fetch(BACKEND_URL + '?method=getAttendanceRecords')
         .then(response => response.json())
         .then(records => displayAttendanceList(Array.isArray(records) ? records : []))
         .catch(err => alert('Error loading attendance records: ' + err));
@@ -601,7 +601,7 @@
       document.getElementById('attendanceEventIdReadonlyField').style.display = 'none';
       const form = document.getElementById('attendanceForm');
       form.attendanceEventId.setAttribute('required', 'required');
-      fetch(BACKEND_URL + '?action=getAllEventIds')
+      fetch(BACKEND_URL + '?method=getAllEventIds')
         .then(res => res.json())
         .then(eventIds => {
           const select = form.attendanceEventId;
@@ -614,7 +614,7 @@
         });
     }
     function openAttendanceFormForEdit(eventId) {
-      fetch(BACKEND_URL + '?action=getAttendanceRecord&eventId=' + encodeURIComponent(eventId))
+      fetch(BACKEND_URL + '?method=getAttendanceRecord&eventId=' + encodeURIComponent(eventId))
         .then(res => res.json())
         .then(record => {
           // Hide dropdown, show readonly field
@@ -660,7 +660,7 @@
       // Get the current present students as an array
       const present = document.querySelector('input[name="presentStudents"]').value
         .split(',').map(s => s.trim()).filter(Boolean);
-      fetch(BACKEND_URL + '?action=getAllEnrollmentNumbers')
+      fetch(BACKEND_URL + '?method=getAllEnrollmentNumbers')
         .then(res => res.json())
         .then(enrollmentNumbers => {
           const list = document.getElementById('studentCheckboxList');
