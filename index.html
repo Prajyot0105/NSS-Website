@@ -1,104 +1,187 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <base target="_top">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1a73e8">
+  <title>NSS Event Manager</title>
   <style>
+    html, body { height: 100%; }
     body {
       font-family: 'Roboto', Arial, sans-serif;
       margin: 0;
-      padding: 20px;
+      padding: 0;
       color: #222;
       background-color: #f5f5f5;
+      min-height: 100vh;
     }
-    .header {
+    .app-bar {
       display: flex;
+      align-items: center;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      padding: 15px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      background: #1a73e8;
+      color: white;
+      padding: 12px 18px;
+      box-shadow: 0 2px 6px rgba(26,115,232,0.08);
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
-    .logo-title {
+    .app-bar .app-title {
+      font-size: 20px;
+      font-weight: 500;
+      flex: 1;
+      text-align: center;
+    }
+    .main-content {
+      padding: 16px 0 80px 0;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .event-list, .attendance-list {
+      margin: 0 10px;
+    }
+    .event-card, .attendance-card {
       display: flex;
       align-items: center;
-      gap: 10px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1.5px 4px rgba(0,0,0,0.07);
+      margin-bottom: 16px;
+      padding: 12px 10px;
+      transition: box-shadow 0.18s;
     }
-    .logo {
-      width: 40px;
-      height: 40px;
+    .event-card:active, .attendance-card:active {
+      box-shadow: 0 3px 14px rgba(26,115,232,0.13);
     }
-    h1 {
-      color: #1a73e8;
-      margin: 0;
-      font-size: 24px;
-    }
-    .add-btn {
-      background-color: #1a73e8;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      font-size: 24px;
-      cursor: pointer;
+    .event-img {
+      width: 56px;
+      height: 56px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-right: 12px;
+      background: #e0e0e0;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
-    .event-list {
-      margin-bottom: 30px;
+    .event-info, .attendance-info {
+      flex: 1;
     }
-    .event-card {
-      padding: 15px;
-      background: white;
-      border-radius: 8px;
-      margin-bottom: 15px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .event-id {
+    .event-id, .attendance-event-id {
       font-weight: bold;
       color: #1a73e8;
-      margin-bottom: 5px;
+      font-size: 17px;
     }
-    .event-name {
-      font-size: 18px;
-      margin-bottom: 8px;
+    .event-name, .attendance-event-name {
+      color: #444;
+      font-size: 15px;
+      margin-top: 2px;
     }
-    .event-details {
-      color: #5f6368;
-      font-size: 14px;
-      margin-bottom: 5px;
+    .event-actions, .attendance-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-left: 8px;
+    }
+    .event-action-btn, .attendance-action-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #888;
+      padding: 5px 10px;
+      border-radius: 4px;
+    }
+    .edit-btn {
+      background: #1a73e8;
+      color: white;
+    }
+    .delete-btn {
+      background: #dc3545;
+      color: white;
+    }
+    .fab {
+      position: fixed;
+      right: 22px;
+      bottom: 80px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #1a73e8;
+      color: white;
+      font-size: 38px;
+      border: none;
+      box-shadow: 0 4px 12px rgba(26,115,232,0.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      cursor: pointer;
+    }
+    .bottom-nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: white;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      height: 60px;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.07);
+      z-index: 30;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+    }
+    .nav-btn {
+      background: none;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 15px;
+      color: #888;
+      flex: 1;
+      padding: 0;
+      cursor: pointer;
+      outline: none;
+      min-width: 80px;
+    }
+    .nav-btn.active {
+      color: #1a73e8;
+      font-weight: 500;
+    }
+    .nav-icon {
+      font-size: 22px;
+      margin-bottom: 2px;
     }
     .form-container, .attendance-form-container {
       background: #fff !important;
-      padding: 32px 24px !important;
+      padding: 32px 18px 24px 18px !important;
       border-radius: 16px !important;
-      margin: 32px 0 !important;
-      box-shadow: 0 6px 32px rgba(0,0,0,0.15) !important;
+      margin: 36px auto !important;
+      box-shadow: 0 6px 32px rgba(0,0,0,0.12) !important;
       max-width: 600px !important;
-      margin-left: auto !important;
-      margin-right: auto !important;
+      width: 96vw;
     }
     .form-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 15px;
+      gap: 14px;
     }
     .form-field {
-      margin-bottom: 15px;
+      margin-bottom: 14px;
     }
     .form-field.full-width {
       grid-column: span 2;
     }
     .form-field label, .form-field .required {
       color: #222 !important;
-      font-weight: 700 !important;
+      font-weight: 600 !important;
       margin-bottom: 8px !important;
-      font-size: 16px !important;
+      font-size: 15px !important;
     }
     .form-field input, .form-field textarea, .form-field select {
       background: #f3f4f6 !important;
@@ -106,19 +189,55 @@
       color: #222 !important;
       font-size: 16px !important;
       border-radius: 7px !important;
-      margin-bottom: 12px !important;
+      margin-bottom: 10px !important;
       font-family: inherit !important;
       transition: border 0.2s, background 0.2s !important;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
     }
     .form-field input:focus, .form-field textarea:focus, .form-field select:focus {
       border-color: #1a73e8 !important;
       outline: none !important;
       background: #fff !important;
     }
-    .form-field input::placeholder, .form-field textarea::placeholder {
-      color: #555 !important;
-      opacity: 1 !important;
-      font-size: 15px !important;
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    .form-actions {
+      margin-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+    }
+    .cancel-btn, .save-btn {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 4px;
+      font-weight: 500;
+      cursor: pointer;
+      font-size: 15px;
+    }
+    .save-btn {
+      background: #1a73e8;
+      color: white;
+    }
+    .cancel-btn {
+      background: #f1f3f4;
+      color: #3c4043;
+    }
+    .required:after {
+      content: " *";
+      color: #e53935 !important;
+      font-weight: bold !important;
+    }
+    .photo-preview {
+      max-width: 100%;
+      max-height: 180px;
+      margin-top: 10px;
+      border-radius: 4px;
+      display: none;
     }
     .hours-input-container {
       display: flex;
@@ -138,313 +257,49 @@
       align-items: center;
       justify-content: center;
     }
-    textarea {
-      min-height: 100px;
-      resize: vertical;
+    /* Modal for Present Students */
+    #studentModal {
+      display: none; position:fixed; left:0; top:0; width:100vw; height:100vh;
+      background:rgba(0,0,0,0.23); z-index:100; align-items:center; justify-content:center;
     }
-    .form-actions {
-      margin-top: 32px;
+    #studentModalContent {
+      background:white; border-radius:12px; max-width:400px; width:92vw; margin:40px auto; padding:18px;
+      box-shadow:0 4px 16px rgba(0,0,0,0.15);
     }
-    .cancel-btn {
-      background: #f1f3f4;
-      color: #3c4043;
-      padding: 10px 24px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: 500;
+    @media (max-width: 700px) {
+      .form-container, .attendance-form-container, .main-content { padding: 10px 0; }
+      .form-container, .attendance-form-container { width: 100vw; }
+      .main-content { width: 100vw; }
+      .event-list, .attendance-list { margin: 0 4px; }
     }
-    .save-btn {
-      background: #1a73e8;
-      color: white;
-      padding: 10px 24px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: 500;
-    }
-    .required:after {
-      content: " *";
-      color: #e53935 !important;
-      font-weight: bold !important;
-    }
-    #createEventPage {
-      display: none;
-    }
-    .loading {
-      opacity: 0.7;
-      pointer-events: none;
-    }
-    .photo-preview {
-      max-width: 100%;
-      max-height: 200px;
-      margin-top: 10px;
-      border-radius: 4px;
-      display: none;
-    }
-    .action-buttons {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    .edit-btn, .delete-btn {
-      padding: 5px 10px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-    }
-    .edit-btn {
-      background: #1a73e8;
-      color: white;
-    }
-    .delete-btn {
-      background: #dc3545;
-      color: white;
-    }
-    .app-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: white;
-      padding: 10px 16px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-    .icon-btn {
-      background: none;
-      border: none;
-      font-size: 22px;
-      cursor: pointer;
-      margin: 0 4px;
-      color: #444;
-    }
-    .app-logo {
-      width: 36px;
-      height: 36px;
-      margin: 0 10px;
-    }
-    .app-title {
-      font-size: 20px;
-      font-weight: 500;
-      color: #222;
-      flex: 1;
-    }
-    .app-actions {
-      display: flex;
-      align-items: center;
-    }
-    .main-content {
-      padding: 0 0 80px 0;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-    .event-list {
-      margin-top: 10px;
-    }
-    .event-card {
-      display: flex;
-      align-items: center;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
-      margin-bottom: 16px;
-      padding: 12px 10px;
-    }
-    .event-img {
-      width: 64px;
-      height: 64px;
-      object-fit: cover;
-      border-radius: 8px;
-      margin-right: 14px;
-      background: #e0e0e0;
-      display: inline-block;
-    }
-    .event-info {
-      flex: 1;
-    }
-    .event-id {
-      font-weight: bold;
-      color: #222;
-      font-size: 17px;
-    }
-    .event-name {
-      color: #444;
-      font-size: 15px;
-      margin-top: 2px;
-    }
-    .event-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-left: 10px;
-    }
-    .event-action-btn {
-      background: none;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      color: #888;
-    }
-    .fab {
-      position: fixed;
-      right: 24px;
-      bottom: 80px;
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      background: #1a73e8;
-      color: white;
-      font-size: 36px;
-      border: none;
-      box-shadow: 0 4px 12px rgba(26,115,232,0.18);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 20;
-    }
-    .bottom-nav {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: white;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      height: 60px;
-      box-shadow: 0 -2px 8px rgba(0,0,0,0.07);
-      z-index: 30;
-    }
-    .nav-btn {
-      background: none;
-      border: none;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      font-size: 15px;
-      color: #888;
-      flex: 1;
-      padding: 0;
-      cursor: pointer;
-    }
-    .nav-btn.active {
-      color: #1a73e8;
-      font-weight: 500;
-    }
-    .nav-icon {
-      font-size: 22px;
-      margin-bottom: 2px;
-    }
-    /* Faded background overlay */
-    /* body:before {
-      content: '';
-      position: fixed;
-      left: 0; right: 0; top: 0; bottom: 0;
-      background: rgba(255,255,255,0.7);
-      z-index: 0;
-      pointer-events: none;
-    } */
-    .app-logo-placeholder {
-      width: 36px;
-      height: 36px;
-      background: #e0e0e0;
-      border-radius: 50%;
-      margin: 0 10px;
-      display: inline-block;
-    }
-    .attendance-card {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 10px;
-      margin-bottom: 16px;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
-    }
-    .attendance-card .event-info {
-      flex: 1;
-    }
-    .attendance-card .event-id {
-      font-weight: bold;
-      color: #1a73e8;
-      font-size: 17px;
-    }
-    .attendance-card .event-name {
-      color: #444;
-      font-size: 15px;
-      margin-top: 2px;
-    }
-    .attendance-card .event-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-left: 10px;
-    }
-    .event-action-btn {
-      background: none;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      color: #888;
-      padding: 5px 10px;
-      border-radius: 4px;
-    }
-    .edit-btn {
-      background: #1a73e8;
-      color: white;
-    }
-    .delete-btn {
-      background: #dc3545;
-      color: white;
+    @media (max-width: 480px) {
+      .app-bar .app-title { font-size: 16px; }
+      .fab { width: 48px; height: 48px; font-size: 30px; right: 14px; bottom: 70px; }
+      .form-container, .attendance-form-container { padding: 18px 4px 14px 4px; }
     }
   </style>
 </head>
-<body style="background: #f5f5f5;">
-  <!-- Top App Bar -->
+<body>
+  <!-- App Bar -->
   <div class="app-bar">
-    <button class="icon-btn" id="menuBtn" title="Menu">&#9776;</button>
-    <div class="app-logo-placeholder"></div>
-    <span class="app-title">Create Event</span>
-    <div class="app-actions">
-      <button class="icon-btn" title="Search">&#128269;</button>
-      <button class="icon-btn" title="Select">&#9745;</button>
-      <button class="icon-btn" title="Refresh">&#8635;</button>
-    </div>
+    <span class="app-title" id="appBarTitle">NSS Events</span>
   </div>
 
   <!-- Main Events List Page -->
   <div id="eventsListPage" class="main-content">
-    <div class="event-list" id="eventList">
-      <!-- Event cards will be rendered here by JS -->
-    </div>
-    <!-- Floating Action Button -->
+    <div class="event-list" id="eventList"></div>
     <button class="fab" id="addEventBtn" title="Add New Event">+</button>
   </div>
 
-  <!-- Bottom Navigation Bar -->
-  <div class="bottom-nav">
-    <button class="nav-btn active"><span class="nav-icon">&#128197;</span><span>Create Event</span></button>
-    <button class="nav-btn"><span class="nav-icon">&#128221;</span><span>Mark Attendance</span></button>
-  </div>
-
   <!-- Create/Edit Event Page -->
-  <div id="createEventPage">
-    <div class="header">
-      <h1 id="formTitle">Create New Event</h1>
-      <button class="cancel-btn" id="backBtn">← Back</button>
-    </div>
-
+  <div id="createEventPage" style="display:none;">
     <div class="form-container">
-      <form id="eventForm">
+      <form id="eventForm" autocomplete="off">
         <input type="hidden" name="editMode" value="false">
         <div class="form-grid">
           <div class="form-field">
             <label class="required">Event ID</label>
-            <input type="text" name="eventId" placeholder="Enter Event ID" required>
+            <input type="text" name="eventId" placeholder="Enter Event ID" required autocomplete="off">
           </div>
           <div class="form-field">
             <label class="required">Event Name</label>
@@ -471,8 +326,8 @@
             </div>
           </div>
           <div class="form-field">
-            <label>Geotagged Photo</label>
-            <input type="file" name="geotaggedPhoto" accept="image/*" onchange="previewImage(this)">
+            <label>Geotagged Photo (URL)</label>
+            <input type="url" name="geotaggedPhoto" placeholder="Paste image URL or leave blank">
             <img id="photoPreview" class="photo-preview">
           </div>
         </div>
@@ -486,26 +341,18 @@
 
   <!-- Attendance List Page -->
   <div id="attendanceListPage" class="main-content" style="display:none;">
-    <div class="event-list" id="attendanceEventList">
-      <!-- Attendance event cards will be rendered here by JS -->
-    </div>
-    <!-- Floating Action Button for Attendance -->
+    <div class="attendance-list" id="attendanceEventList"></div>
     <button class="fab" id="addAttendanceBtn" title="Add Attendance">+</button>
   </div>
 
   <!-- Attendance Form Page -->
   <div id="attendanceFormPage" style="display:none;">
-    <div class="app-bar">
-      <button class="icon-btn" id="backToAttendanceList" title="Back">&#8592;</button>
-      <div class="app-logo-placeholder"></div>
-      <span class="app-title">Attendance Form</span>
-    </div>
     <div class="form-container attendance-form-container">
       <form id="attendanceForm">
         <input type="hidden" name="attendanceEditMode" value="false">
         <div class="form-field" id="attendanceEventIdDropdownField">
           <label class="required">Event ID</label>
-          <select name="attendanceEventId" required style="width:100%;padding:10px;border:1px solid #dadce0;border-radius:4px;">
+          <select name="attendanceEventId" required style="width:100%;">
             <option value="">Select Event</option>
           </select>
         </div>
@@ -520,7 +367,7 @@
             <button type="button" class="hours-btn" id="openStudentModal">+</button>
           </div>
         </div>
-        <div class="form-actions" style="justify-content:space-between;">
+        <div class="form-actions">
           <button type="button" class="cancel-btn" id="cancelAttendanceFormBtn">Cancel</button>
           <button type="submit" class="save-btn">Save</button>
         </div>
@@ -529,10 +376,10 @@
   </div>
 
   <!-- Present Students Modal -->
-  <div id="studentModal" style="display:none;position:fixed;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.25);z-index:100;align-items:center;justify-content:center;">
-    <div style="background:white;border-radius:12px;max-width:400px;width:90vw;margin:40px auto;padding:20px;box-shadow:0 4px 16px rgba(0,0,0,0.15);">
+  <div id="studentModal">
+    <div id="studentModalContent">
       <div style="font-size:18px;font-weight:500;margin-bottom:10px;">Present Students</div>
-      <input type="text" id="studentSearch" placeholder="Search" style="width:100%;padding:8px 10px;margin-bottom:10px;border:1px solid #dadce0;border-radius:4px;">
+      <input type="text" id="studentSearch" placeholder="Search" style="width:100%;padding:8px;margin-bottom:10px;border:1px solid #dadce0;border-radius:4px;">
       <div id="studentCheckboxList" style="max-height:300px;overflow-y:auto;margin-bottom:10px;"></div>
       <div style="display:flex;justify-content:space-between;">
         <button type="button" class="cancel-btn" id="clearStudentSelection">Clear</button>
@@ -541,115 +388,58 @@
     </div>
   </div>
 
-    <script>
+  <!-- Bottom Navigation Bar -->
+  <div class="bottom-nav">
+    <button class="nav-btn active" id="navEvents"><span class="nav-icon">&#128197;</span><span>Events</span></button>
+    <button class="nav-btn" id="navAttendance"><span class="nav-icon">&#128221;</span><span>Attendance</span></button>
+  </div>
+
+  <script>
+    // ========== CONFIG ==========
+    const BACKEND_URL = "https://script.google.com/macros/s/AKfycbx_DjoC8usQYeSf3_eHgay6L92C6UZVBvIW-Q31tdmP4AtUbqGBzwYRVBgiVvpaFbWunQ/exec";
+    // ============================
+
     let isEditMode = false;
     let currentEventId = null;
 
-    document.addEventListener('DOMContentLoaded', function() {
-      loadEvents();
-
-      document.getElementById('addEventBtn').addEventListener('click', showCreateEventPage);
-      document.getElementById('backBtn').addEventListener('click', showEventsListPage);
-      document.getElementById('cancelFormBtn').addEventListener('click', showEventsListPage);
-      document.getElementById('eventForm').addEventListener('submit', handleFormSubmit);
-
-      document.getElementById('decreaseHours').addEventListener('click', () => {
-        const input = document.querySelector('input[name="nssHours"]');
-        if (input.value > 0) input.value = parseInt(input.value) - 1;
+    // === NAVIGATION ===
+    function showPage(page) {
+      document.getElementById('eventsListPage').style.display = (page === 'events') ? 'block' : 'none';
+      document.getElementById('createEventPage').style.display = (page === 'createEvent') ? 'block' : 'none';
+      document.getElementById('attendanceListPage').style.display = (page === 'attendance') ? 'block' : 'none';
+      document.getElementById('attendanceFormPage').style.display = (page === 'attendanceForm') ? 'block' : 'none';
+      document.getElementById('appBarTitle').textContent =
+        page === 'events' ? "NSS Events" :
+        page === 'createEvent' ? (isEditMode ? "Edit Event" : "Create Event") :
+        page === 'attendance' ? "Attendance" :
+        "Attendance Form";
+    }
+    function setNavActive(idx) {
+      document.querySelectorAll('.nav-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', i === idx);
       });
-
-      document.getElementById('increaseHours').addEventListener('click', () => {
-        const input = document.querySelector('input[name="nssHours"]');
-        input.value = parseInt(input.value) + 1;
-      });
-
-      document.querySelectorAll('.nav-btn')[1].addEventListener('click', function() {
-        document.getElementById('eventsListPage').style.display = 'none';
-        document.getElementById('attendanceListPage').style.display = 'block';
-        loadAttendanceList();
-      });
-      document.querySelectorAll('.nav-btn')[0].addEventListener('click', function() {
-        document.getElementById('attendanceListPage').style.display = 'none';
-        document.getElementById('eventsListPage').style.display = 'block';
-        loadEvents();
-      });
-
-      document.getElementById('addAttendanceBtn').addEventListener('click', openAttendanceForm);
-
-      document.getElementById('cancelAttendanceFormBtn').addEventListener('click', function() {
-        document.getElementById('attendanceFormPage').style.display = 'none';
-        document.getElementById('attendanceListPage').style.display = 'block';
-      });
-
-      document.getElementById('attendanceForm').addEventListener('submit', handleAttendanceFormSubmit);
-
-      document.getElementById('clearStudentSelection').addEventListener('click', function() {
-        Array.from(document.querySelectorAll('#studentCheckboxList input[type="checkbox"]')).forEach(cb => cb.checked = false);
-        document.querySelector('input[name="presentStudents"]').value = '';
-      });
-
-      document.getElementById('openStudentModal').addEventListener('click', openStudentModal);
-
-      document.getElementById('doneStudentSelection').addEventListener('click', function() {
-        const checked = Array.from(document.querySelectorAll('#studentCheckboxList input[type="checkbox"]:checked'))
-          .map(cb => cb.value);
-        document.querySelector('input[name="presentStudents"]').value = checked.join(',');
-        document.getElementById('studentModal').style.display = 'none';
-      });
-
-      document.getElementById('studentSearch').addEventListener('input', function() {
-        const search = this.value.toLowerCase();
-        Array.from(document.querySelectorAll('#studentCheckboxList label')).forEach(label => {
-          const text = label.textContent.toLowerCase();
-          label.parentElement.style.display = text.includes(search) ? '' : 'none';
-        });
-      });
-    });
-
-    function previewImage(input) {
-      const preview = document.getElementById('photoPreview');
-      if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          preview.src = e.target.result;
-          preview.style.display = 'block';
-        }
-        reader.readAsDataURL(input.files[0]);
-      }
     }
 
+    // === EVENT LIST ===
     function loadEvents() {
-      fetch('https://script.google.com/macros/s/AKfycbyO4YnyqFYflFfNrZ89et4ulPLCpXxrooeVPwpYKlM-2p7ls-y55KWrRnC7qohpjWUl-A/exec')
+      fetch(BACKEND_URL + '?action=getEvents')
         .then(response => response.json())
-        .then(events => displayEvents(events))
-        .catch(err => alert('Error: ' + err));
+        .then(events => displayEvents(Array.isArray(events) ? events : []))
+        .catch(err => alert('Error loading events: ' + err));
     }
-
     function displayEvents(events) {
-       console.log('Events received:', events);
-       // alert('Events received: ' + JSON.stringify(events));
-
-      if (!Array.isArray(events)) {
-       alert('Events is not an array! Value: ' + JSON.stringify(events));
-      events = [];
-  }
-
-
       const eventList = document.getElementById('eventList');
       eventList.innerHTML = '';
-
-      if (!events || events.length === 0) {
+      if (!events.length) {
         eventList.innerHTML = '<div class="event-card">No events found</div>';
         return;
       }
-
       events.forEach(event => {
         const eventCard = document.createElement('div');
         eventCard.className = 'event-card';
-
         eventCard.innerHTML = `
           <div class="event-img">
-            ${event.geotaggedPhoto ? `<img src="${event.geotaggedPhoto}" style="width:64px;height:64px;object-fit:cover;border-radius:8px;">` : ''}
+            ${event.geotaggedPhoto ? `<img src="${event.geotaggedPhoto}" style="width:56px;height:56px;object-fit:cover;border-radius:8px;">` : ''}
           </div>
           <div class="event-info">
             <div class="event-id">${event.eventId}</div>
@@ -660,241 +450,222 @@
             <button class="event-action-btn edit-btn" title="Edit">&#9998;</button>
           </div>
         `;
-
-        eventCard.querySelector('.delete-btn').addEventListener('click', function() {
-          deleteEvent(event.eventId);
-        });
-        eventCard.querySelector('.edit-btn').addEventListener('click', function() {
-          editEvent(event.eventId);
-        });
-
+        eventCard.querySelector('.delete-btn').addEventListener('click', () => deleteEvent(event.eventId));
+        eventCard.querySelector('.edit-btn').addEventListener('click', () => editEvent(event.eventId));
         eventList.appendChild(eventCard);
       });
     }
 
-    function showCreateEventPage() {
-      document.getElementById('eventsListPage').style.display = 'none';
-      document.getElementById('createEventPage').style.display = 'block';
+    // === EVENT CRUD ===
+    function showCreateEventPage(edit = false, eventObj = null) {
+      showPage('createEvent');
       document.getElementById('eventForm').reset();
       document.getElementById('photoPreview').style.display = 'none';
-      document.getElementById('formTitle').textContent = 'Create New Event';
-      isEditMode = false;
-      currentEventId = null;
-      document.getElementById('eventForm').editMode.value = "false";
-      document.getElementById('eventForm').eventId.disabled = false;
+      isEditMode = edit;
+      currentEventId = eventObj && eventObj.eventId;
+      document.getElementById('eventForm').editMode.value = edit ? "true" : "false";
+      document.getElementById('eventForm').eventId.disabled = !!edit;
+      if (edit && eventObj) {
+        const form = document.getElementById('eventForm');
+        form.eventId.value = eventObj.eventId;
+        form.eventName.value = eventObj.eventName;
+        form.description.value = eventObj.description || '';
+        form.eventDate.value = eventObj.eventDate;
+        form.eventTime.value = eventObj.eventTime;
+        form.nssHours.value = eventObj.nssHours || 0;
+        form.geotaggedPhoto.value = eventObj.geotaggedPhoto || '';
+        if (eventObj.geotaggedPhoto) {
+          document.getElementById('photoPreview').src = eventObj.geotaggedPhoto;
+          document.getElementById('photoPreview').style.display = 'block';
+        }
+      }
     }
-
-    function showEventsListPage() {
-      document.getElementById('eventsListPage').style.display = 'block';
-      document.getElementById('createEventPage').style.display = 'none';
-      loadEvents();
-    }
-
     function editEvent(eventId) {
-      isEditMode = true;
-      currentEventId = eventId;
-      showCreateEventPage();
-      document.getElementById('formTitle').textContent = 'Edit Event';
-      document.getElementById('eventForm').editMode.value = "true";
-
-      google.script.run
-        .withSuccessHandler(populateForm)
-        .withFailureHandler(showError)
-        .getEventById(eventId);
+      fetch(BACKEND_URL + '?action=getEventById&eventId=' + encodeURIComponent(eventId))
+        .then(res => res.json())
+        .then(eventObj => showCreateEventPage(true, eventObj))
+        .catch(err => alert('Error: ' + err));
     }
-
-    function populateForm(event) {
-      const form = document.getElementById('eventForm');
-      form.eventId.value = event.eventId;
-      form.eventId.disabled = true;
-      form.eventName.value = event.eventName;
-      form.description.value = event.description || '';
-      form.eventDate.value = event.eventDate;
-      form.eventTime.value = event.eventTime;
-      form.nssHours.value = event.nssHours;
-
-      if (event.geotaggedPhoto) {
-        document.getElementById('photoPreview').src = event.geotaggedPhoto;
-        document.getElementById('photoPreview').style.display = 'block';
-      }
-    }
-
     function deleteEvent(eventId) {
-      if (confirm('Are you sure you want to delete this event?')) {
-        google.script.run
-          .withSuccessHandler(() => {
-            alert('Event deleted successfully!');
-            loadEvents();
-          })
-          .withFailureHandler(showError)
-          .deleteEvent(eventId);
-      }
+      if (!confirm('Are you sure you want to delete this event?')) return;
+      fetch(BACKEND_URL, {
+        method: 'POST',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "deleteEvent", eventId })
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.status === "success") {
+          alert("Event deleted successfully!");
+          loadEvents();
+        } else {
+          alert(res.error || "Failed to delete event.");
+        }
+      })
+      .catch(err => alert('Error: ' + err));
     }
-
     function handleFormSubmit(e) {
       e.preventDefault();
       const form = document.getElementById('eventForm');
       const isEdit = form.editMode.value === "true";
       const handler = isEdit ? 'updateEvent' : 'createEvent';
-
       const formData = {
+        action: handler,
         eventId: form.eventId.value,
         eventName: form.eventName.value,
         description: form.description.value,
         eventDate: form.eventDate.value,
         eventTime: form.eventTime.value,
         nssHours: form.nssHours.value,
-        geotaggedPhoto: form.geotaggedPhoto.files[0] ? form.geotaggedPhoto.files[0].name : ''
+        geotaggedPhoto: form.geotaggedPhoto.value
       };
-
-      if (!formData.eventId || !formData.eventName || !formData.eventDate || 
-          !formData.eventTime || !formData.nssHours) {
+      if (!formData.eventId || !formData.eventName || !formData.eventDate || !formData.eventTime || !formData.nssHours) {
         alert('Please fill all required fields');
         return;
       }
-
       const submitBtn = document.getElementById('submitBtn');
       submitBtn.disabled = true;
       submitBtn.textContent = isEdit ? 'Updating...' : 'Creating...';
-      document.body.classList.add('loading');
-
-      google.script.run
-        .withSuccessHandler(function() {
-          alert(isEdit ? 'Event updated successfully!' : 'Event created successfully!');
-          submitBtn.disabled = false;
-          submitBtn.textContent = isEdit ? 'Update' : 'Create';
-          document.body.classList.remove('loading');
-          showEventsListPage();
-        })
-        .withFailureHandler(function(error) {
-          alert('Error: ' + error.message);
-          submitBtn.disabled = false;
-          submitBtn.textContent = isEdit ? 'Update' : 'Create';
-          document.body.classList.remove('loading');
-        })
-        [handler](formData);
+      fetch(BACKEND_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData)
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.status === "success") {
+          alert(isEdit ? "Event updated!" : "Event created!");
+          showPage('events');
+          loadEvents();
+        } else {
+          alert(res.error || "Failed to save event.");
+        }
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Save";
+      })
+      .catch(err => {
+        alert('Error: ' + err);
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Save";
+      });
     }
 
-    function showError(error) {
-      alert('Error: ' + error.message);
+    // === ATTENDANCE ===
+    function loadAttendanceList() {
+      fetch(BACKEND_URL + '?action=getAttendanceRecords')
+        .then(response => response.json())
+        .then(records => displayAttendanceList(Array.isArray(records) ? records : []))
+        .catch(err => alert('Error loading attendance records: ' + err));
     }
-
+    function displayAttendanceList(records) {
+      const list = document.getElementById('attendanceEventList');
+      list.innerHTML = '';
+      if (!records.length) {
+        list.innerHTML = '<div class="attendance-card">No attendance records found.</div>';
+        return;
+      }
+      records.forEach(record => {
+        const card = document.createElement('div');
+        card.className = 'attendance-card';
+        card.innerHTML = `
+          <div class="attendance-info">
+            <div class="attendance-event-id">${record.eventId}</div>
+            <div class="attendance-event-name">${record.presentStudents}</div>
+          </div>
+          <div class="attendance-actions">
+            <button class="attendance-action-btn edit-btn" title="Edit">&#9998;</button>
+            <button class="attendance-action-btn delete-btn" title="Delete">&#128465;</button>
+          </div>
+        `;
+        card.querySelector('.edit-btn').addEventListener('click', () => openAttendanceFormForEdit(record.eventId));
+        card.querySelector('.delete-btn').addEventListener('click', () => {
+          if (confirm('Delete this attendance record?')) {
+            fetch(BACKEND_URL, {
+              method: 'POST',
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ action: "deleteAttendance", eventId: record.eventId })
+            })
+            .then(res => res.json())
+            .then(res => {
+              if (res.status === "success") loadAttendanceList();
+              else alert(res.error || "Failed to delete attendance.");
+            });
+          }
+        });
+        list.appendChild(card);
+      });
+    }
     function openAttendanceForm() {
       // Show dropdown, hide readonly field
       document.getElementById('attendanceEventIdDropdownField').style.display = 'block';
       document.getElementById('attendanceEventIdReadonlyField').style.display = 'none';
-
       const form = document.getElementById('attendanceForm');
-      form.attendanceEventId.setAttribute('required', 'required'); // Ensure required when visible
-
-      google.script.run
-        .withSuccessHandler(function(eventIds) {
+      form.attendanceEventId.setAttribute('required', 'required');
+      fetch(BACKEND_URL + '?action=getAllEventIds')
+        .then(res => res.json())
+        .then(eventIds => {
           const select = form.attendanceEventId;
           select.innerHTML = '<option value="">Select Event</option>';
-          eventIds.forEach(id => {
+          (eventIds || []).forEach(id => {
             select.innerHTML += `<option value="${id}">${id}</option>`;
           });
-          document.getElementById('attendanceFormPage').style.display = 'block';
-          document.getElementById('attendanceListPage').style.display = 'none';
-        })
-        .getAllEventIds();
+          form.presentStudents.value = '';
+          showPage('attendanceForm');
+        });
     }
-
+    function openAttendanceFormForEdit(eventId) {
+      fetch(BACKEND_URL + '?action=getAttendanceRecord&eventId=' + encodeURIComponent(eventId))
+        .then(res => res.json())
+        .then(record => {
+          // Hide dropdown, show readonly field
+          document.getElementById('attendanceEventIdDropdownField').style.display = 'none';
+          document.getElementById('attendanceEventIdReadonlyField').style.display = 'block';
+          const form = document.getElementById('attendanceForm');
+          form.attendanceEditMode.value = "true";
+          form.attendanceEventIdReadonly.value = record.eventId;
+          form.presentStudents.value = record.presentStudents;
+          form.attendanceEventId.removeAttribute('required');
+          showPage('attendanceForm');
+        });
+    }
     function handleAttendanceFormSubmit(e) {
       e.preventDefault();
       const form = document.getElementById('attendanceForm');
       const isEdit = form.attendanceEditMode.value === "true";
       const eventId = isEdit ? form.attendanceEventIdReadonly.value : form.attendanceEventId.value;
       const attendanceData = {
+        action: isEdit ? "updateAttendance" : "saveAttendance",
         eventId: eventId,
-        presentStudents: form.presentStudents.value // comma separated
+        presentStudents: form.presentStudents.value
       };
-      const handler = isEdit ? 'updateAttendance' : 'saveAttendance';
-      google.script.run
-        .withSuccessHandler(() => {
-          alert('Attendance saved!');
-          document.getElementById('attendanceFormPage').style.display = 'none';
-          document.getElementById('attendanceListPage').style.display = 'block';
+      fetch(BACKEND_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(attendanceData)
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.status === "success") {
+          alert("Attendance saved!");
+          showPage('attendance');
           loadAttendanceList();
-        })
-        .withFailureHandler(err => alert('Error: ' + err.message))
-        [handler](attendanceData);
-    }
-
-    function loadAttendanceList() {
-      google.script.run
-        .withSuccessHandler(displayAttendanceList)
-        .getAttendanceRecords();
-    }
-
-    function displayAttendanceList(records) {
-      const list = document.getElementById('attendanceEventList');
-      list.innerHTML = '';
-      if (!records.length) {
-        list.innerHTML = '<div class="event-card">No attendance records found.</div>';
-        return;
-      }
-      records.forEach(record => {
-        const card = document.createElement('div');
-        card.className = 'event-card attendance-card';
-        card.innerHTML = `
-          <div class="event-info">
-            <div class="event-id">${record.eventId}</div>
-            <div class="event-name">${record.presentStudents}</div>
-          </div>
-          <div class="event-actions">
-            <button class="event-action-btn edit-btn" title="Edit">&#9998;</button>
-            <button class="event-action-btn delete-btn" title="Delete">&#128465;</button>
-          </div>
-        `;
-        // Edit button
-        card.querySelector('.edit-btn').addEventListener('click', function() {
-          openAttendanceFormForEdit(record.eventId);
-        });
-        // Delete button
-        card.querySelector('.delete-btn').addEventListener('click', function() {
-          if (confirm('Delete this attendance record?')) {
-            google.script.run
-              .withSuccessHandler(loadAttendanceList)
-              .deleteAttendance(record.eventId);
-          }
-        });
-        list.appendChild(card);
+        } else {
+          alert(res.error || "Failed to save attendance.");
+        }
       });
     }
 
-    function openAttendanceFormForEdit(eventId) {
-      google.script.run
-        .withSuccessHandler(function(record) {
-          // Hide dropdown, show readonly field
-          document.getElementById('attendanceEventIdDropdownField').style.display = 'none';
-          document.getElementById('attendanceEventIdReadonlyField').style.display = 'block';
-
-          const form = document.getElementById('attendanceForm');
-          form.attendanceEditMode.value = "true";
-          form.attendanceEventIdReadonly.value = record.eventId;
-          form.presentStudents.value = record.presentStudents;
-          form.attendanceEventId.removeAttribute('required'); // Remove required when hidden
-
-          document.getElementById('attendanceFormPage').style.display = 'block';
-          document.getElementById('attendanceListPage').style.display = 'none';
-        })
-        .getAttendanceRecord(eventId);
-    }
-
+    // === PRESENT STUDENTS MODAL ===
     function openStudentModal() {
       // Get the current present students as an array
       const present = document.querySelector('input[name="presentStudents"]').value
-        .split(',')
-        .map(s => s.trim())
-        .filter(Boolean);
-
-      google.script.run
-        .withSuccessHandler(function(enrollmentNumbers) {
+        .split(',').map(s => s.trim()).filter(Boolean);
+      fetch(BACKEND_URL + '?action=getAllEnrollmentNumbers')
+        .then(res => res.json())
+        .then(enrollmentNumbers => {
           const list = document.getElementById('studentCheckboxList');
           list.innerHTML = '';
-          enrollmentNumbers.forEach(num => {
-            // Check if this student is already present (compare as string, trim spaces)
+          (enrollmentNumbers || []).forEach(num => {
             const checked = present.includes(String(num).trim()) ? 'checked' : '';
             list.innerHTML += `
               <div>
@@ -906,9 +677,77 @@
             `;
           });
           document.getElementById('studentModal').style.display = 'flex';
-        })
-        .getAllEnrollmentNumbers();
+        });
     }
+
+    // === PHOTO PREVIEW ===
+    document.addEventListener('DOMContentLoaded', function() {
+      // Show/hide photo preview on URL change
+      const photoInput = document.querySelector('input[name="geotaggedPhoto"]');
+      photoInput.addEventListener('input', function() {
+        const preview = document.getElementById('photoPreview');
+        if (photoInput.value && photoInput.value.startsWith('http')) {
+          preview.src = photoInput.value;
+          preview.style.display = 'block';
+        } else {
+          preview.style.display = 'none';
+        }
+      });
+    });
+
+    // === UI EVENT HOOKS ===
+    document.addEventListener('DOMContentLoaded', function() {
+      // Navigation
+      document.getElementById('navEvents').addEventListener('click', () => {
+        showPage('events'); setNavActive(0); loadEvents();
+      });
+      document.getElementById('navAttendance').addEventListener('click', () => {
+        showPage('attendance'); setNavActive(1); loadAttendanceList();
+      });
+      // FABs
+      document.getElementById('addEventBtn').addEventListener('click', () => showCreateEventPage(false, null));
+      document.getElementById('addAttendanceBtn').addEventListener('click', openAttendanceForm);
+      // Cancel buttons
+      document.getElementById('cancelFormBtn').addEventListener('click', () => { showPage('events'); loadEvents(); });
+      document.getElementById('cancelAttendanceFormBtn').addEventListener('click', () => { showPage('attendance'); loadAttendanceList(); });
+      // Form submits
+      document.getElementById('eventForm').addEventListener('submit', handleFormSubmit);
+      document.getElementById('attendanceForm').addEventListener('submit', handleAttendanceFormSubmit);
+      // Hours increment/decrement
+      document.getElementById('decreaseHours').addEventListener('click', () => {
+        const input = document.querySelector('input[name="nssHours"]');
+        if (parseInt(input.value) > 0) input.value = parseInt(input.value) - 1;
+      });
+      document.getElementById('increaseHours').addEventListener('click', () => {
+        const input = document.querySelector('input[name="nssHours"]');
+        input.value = parseInt(input.value) + 1;
+      });
+      // Student modal
+      document.getElementById('openStudentModal').addEventListener('click', openStudentModal);
+      document.getElementById('doneStudentSelection').addEventListener('click', function() {
+        const checked = Array.from(document.querySelectorAll('#studentCheckboxList input[type="checkbox"]:checked'))
+          .map(cb => cb.value);
+        document.querySelector('input[name="presentStudents"]').value = checked.join(',');
+        document.getElementById('studentModal').style.display = 'none';
+      });
+      document.getElementById('clearStudentSelection').addEventListener('click', function() {
+        Array.from(document.querySelectorAll('#studentCheckboxList input[type="checkbox"]')).forEach(cb => cb.checked = false);
+        document.querySelector('input[name="presentStudents"]').value = '';
+      });
+      document.getElementById('studentSearch').addEventListener('input', function() {
+        const search = this.value.toLowerCase();
+        Array.from(document.querySelectorAll('#studentCheckboxList label')).forEach(label => {
+          const text = label.textContent.toLowerCase();
+          label.parentElement.style.display = text.includes(search) ? '' : 'none';
+        });
+      });
+      // Hide modal if click outside
+      document.getElementById('studentModal').addEventListener('click', function(e) {
+        if (e.target === this) this.style.display = 'none';
+      });
+      // Initial load: show events
+      showPage('events'); setNavActive(0); loadEvents();
+    });
   </script>
 </body>
 </html>
