@@ -395,9 +395,9 @@
   </div>
 
   <script>
-   // ========== CONFIG ==========
-    const BACKEND_URL = "https://script.google.com/macros/s/AKfycbxPm0Rsw9Vg2KyZY30lSBwg3Q9JNkUKSXvF3HxSZbU310JlyFmuSC-ULzpPVzOTHvEL1Q/exec";
-   // ============================
+    // ========== CONFIG ==========
+    const BACKEND_URL = "https://script.google.com/macros/s/AKfycbyrYnc26s1uQ9LGa8YKCgVi7fnSN7fRgo-nZSpnWksYzKAf7kBh1K3oC43weLzoTrg6rQ/exec";
+    // ============================
 
     let isEditMode = false;
     let currentEventId = null;
@@ -488,10 +488,13 @@
     }
     function deleteEvent(eventId) {
       if (!confirm('Are you sure you want to delete this event?')) return;
+      const formData = new URLSearchParams();
+      formData.append('action', 'deleteEvent');
+      formData.append('eventId', eventId);
+
       fetch(BACKEND_URL, {
-        method: 'POST',
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "deleteEvent", eventId })
+        method: "POST",
+        body: formData
       })
       .then(res => res.json())
       .then(res => {
@@ -508,28 +511,31 @@
       e.preventDefault();
       const form = document.getElementById('eventForm');
       const isEdit = form.editMode.value === "true";
-      const handler = isEdit ? 'updateEvent' : 'createEvent';
-      const formData = {
-        action: handler,
-        eventId: form.eventId.value,
-        eventName: form.eventName.value,
-        description: form.description.value,
-        eventDate: form.eventDate.value,
-        eventTime: form.eventTime.value,
-        nssHours: form.nssHours.value,
-        geotaggedPhoto: form.geotaggedPhoto.value
-      };
-      if (!formData.eventId || !formData.eventName || !formData.eventDate || !formData.eventTime || !formData.nssHours) {
+      
+      // Validate required fields
+      if (!form.eventId.value || !form.eventName.value || !form.eventDate.value || !form.eventTime.value || !form.nssHours.value) {
         alert('Please fill all required fields');
         return;
       }
+      
       const submitBtn = document.getElementById('submitBtn');
       submitBtn.disabled = true;
       submitBtn.textContent = isEdit ? 'Updating...' : 'Creating...';
+      
+      // Create URLSearchParams for simple POST request
+      const formData = new URLSearchParams();
+      formData.append('action', isEdit ? 'updateEvent' : 'createEvent');
+      formData.append('eventId', form.eventId.value);
+      formData.append('eventName', form.eventName.value);
+      formData.append('description', form.description.value);
+      formData.append('eventDate', form.eventDate.value);
+      formData.append('eventTime', form.eventTime.value);
+      formData.append('nssHours', form.nssHours.value);
+      formData.append('geotaggedPhoto', form.geotaggedPhoto.value);
+
       fetch(BACKEND_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
+        body: formData  // No custom headers = simple request
       })
       .then(res => res.json())
       .then(res => {
@@ -580,10 +586,13 @@
         card.querySelector('.edit-btn').addEventListener('click', () => openAttendanceFormForEdit(record.eventId));
         card.querySelector('.delete-btn').addEventListener('click', () => {
           if (confirm('Delete this attendance record?')) {
+            const formData = new URLSearchParams();
+            formData.append('action', 'deleteAttendance');
+            formData.append('eventId', record.eventId);
+            
             fetch(BACKEND_URL, {
               method: 'POST',
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ action: "deleteAttendance", eventId: record.eventId })
+              body: formData
             })
             .then(res => res.json())
             .then(res => {
@@ -638,10 +647,14 @@
         eventId: eventId,
         presentStudents: form.presentStudents.value
       };
+      const formData = new URLSearchParams();
+      formData.append('action', attendanceData.action);
+      formData.append('eventId', attendanceData.eventId);
+      formData.append('presentStudents', attendanceData.presentStudents);
+
       fetch(BACKEND_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(attendanceData)
+        body: formData
       })
       .then(res => res.json())
       .then(res => {
