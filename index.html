@@ -305,8 +305,7 @@
   <!-- Create/Edit Event Page -->
   <div id="createEventPage" style="display:none;">
     <div class="form-container">
-      <form id="eventForm" autocomplete="off">
-        <input type="hidden" name="editMode" value="false">
+      <form action="YOUR_SCRIPT_URL/exec" method="POST" enctype="multipart/form-data">
         <div class="form-grid">
           <div class="form-field">
             <label class="required">Event ID</label>
@@ -330,22 +329,17 @@
           </div>
           <div class="form-field">
             <label class="required">NSS Hours</label>
-            <div class="hours-input-container">
-              <button type="button" class="hours-btn" id="decreaseHours">-</button>
-              <input type="number" name="nssHours" value="0" min="0" required>
-              <button type="button" class="hours-btn" id="increaseHours">+</button>
-            </div>
+            <input type="number" name="nssHours" value="0" min="0" required>
           </div>
           <div class="form-field">
-            <label>Geotagged Photos (Upload)</label>
-            <input type="file" name="geotaggedPhoto" accept="image/*" multiple>
-            <div id="photoPreviewContainer"></div>
+            <label>Geotagged Photo (Upload)</label>
+            <input type="file" name="geotaggedPhoto" required>
           </div>
         </div>
         <div class="form-actions">
-          <button type="button" class="cancel-btn" id="cancelFormBtn">Cancel</button>
           <button type="submit" class="save-btn" id="submitBtn">Save</button>
         </div>
+        <input type="hidden" name="action" value="createEvent">
       </form>
     </div>
   </div>
@@ -418,7 +412,7 @@
 
   <script>
     // ========== CONFIG ==========
-    const BACKEND_URL = "https://script.google.com/macros/s/AKfycbz7M2u607xycFmcCMKezYYvmPCA1h0S2pplxi5qA5FaEgboFaKqBzx7rTf-UNsEUX-Pnw/exec";
+    const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwojv3ptSp2ka9nKhnizer_nh3lE2X57vxUUZLDKzH35VLnxBR56k0UBunCjx2kKVyxWg/exec";
     // ============================
 
     let isEditMode = false;
@@ -772,7 +766,7 @@
       document.getElementById('cancelFormBtn').addEventListener('click', () => { showPage('events'); loadEvents(); });
       document.getElementById('cancelAttendanceFormBtn').addEventListener('click', () => { showPage('attendance'); loadAttendanceList(); });
       // Form submits
-      document.getElementById('eventForm').addEventListener('submit', handleFormSubmit);
+      // document.getElementById('eventForm').addEventListener('submit', handleFormSubmit); // Removed as per edit hint
       document.getElementById('attendanceForm').addEventListener('submit', handleAttendanceFormSubmit);
       // Hours increment/decrement
       document.getElementById('decreaseHours').addEventListener('click', () => {
