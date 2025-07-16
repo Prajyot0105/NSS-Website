@@ -1,42 +1,50 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Upload Photo to Google Drive</title>
+  <title>Photo Upload to Google Drive</title>
 </head>
 <body>
-  <h2>Upload Photo</h2>
-  <input type="file" id="fileInput" accept="image/*" />
+  <h2>Upload Photo to Google Drive</h2>
+  <input type="file" id="fileInput" accept="image/*">
   <button onclick="uploadPhoto()">Upload</button>
   <p id="status"></p>
 
   <script>
     async function uploadPhoto() {
-      const fileInput = document.getElementById("fileInput");
-      const file = fileInput.files[0];
+      const input = document.getElementById("fileInput");
+      const file = input.files[0];
 
       if (!file) {
-        alert("Please select a file!");
+        alert("Please select a file.");
         return;
       }
 
       const reader = new FileReader();
       reader.onload = async function (e) {
-        const base64Data = e.target.result.split(",")[1];
+        const base64 = e.target.result.split(',')[1]; // Remove data:image/...;base64,
+        const payload = {
+          filename: file.name,
+          mimeType: file.type,
+          base64: base64
+        };
 
-        const response = await fetch("https://script.google.com/macros/s/AKfycbxq3TNbP53M47UULfhs1quQJLNis-0lKlvqAzVa-ZwXV1Nms7cNII9Pv8I01uqNINjBcw/exec", {
-          method: "POST",
-          body: JSON.stringify({
-            filename: file.name,
-            mimeType: file.type,
-            data: base64Data
-          }),
-          headers: {
-            "Content-Type": "application/json"
+        try {
+          const res = await fetch("https://script.google.com/macros/s/AKfycbw1r-rjBe1gWX2IexHMQyIhj7WHKcy_nOfsYH-525LqdJ6Hu-5p_FH9q-VlzlhclwFxCg/exec", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          const result = await res.json();
+          if (result.status === "success") {
+            document.getElementById("status").innerHTML = 
+              `✅ Uploaded: <a href="${result.fileUrl}" target="_blank">${result.fileName}</a>`;
+          } else {
+            document.getElementById("status").innerText = "❌ Error: " + result.message;
           }
-        });
-
-        const result = await response.text();
-        document.getElementById("status").innerText = result;
+        } catch (err) {
+          document.getElementById("status").innerText = "❌ Request failed: " + err.message;
+        }
       };
 
       reader.readAsDataURL(file);
