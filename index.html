@@ -334,18 +334,49 @@
           <div class="form-field">
             <label>Geotagged Photo (Upload)</label>
             <input type="file" name="geotaggedPhoto" id="geotaggedPhoto" accept="image/*" required>
+            <div id="photoPreviewContainer"></div>
           </div>
         </div>
         <div class="form-actions">
+          <button type="button" class="cancel-btn" id="cancelFormBtn">Cancel</button>
           <button type="submit" class="save-btn" id="submitBtn">Save</button>
         </div>
       </form>
       <div id="uploadStatus"></div>
     </div>
   </div>
+  <!-- Attendance Form Page -->
+  <div id="attendanceFormPage" style="display:none;">
+    <div class="form-container attendance-form-container">
+      <form id="attendanceForm">
+        <input type="hidden" name="attendanceEditMode" value="false">
+        <div class="form-field" id="attendanceEventIdDropdownField">
+          <label class="required">Event ID</label>
+          <select name="attendanceEventId" required style="width:100%;">
+            <option value="">Select Event</option>
+          </select>
+        </div>
+        <div class="form-field" id="attendanceEventIdReadonlyField" style="display:none;">
+          <label class="required">Event ID</label>
+          <input type="text" name="attendanceEventIdReadonly" readonly>
+        </div>
+        <div class="form-field">
+          <label>Present Students</label>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <input type="text" name="presentStudents" readonly placeholder="Select students" style="flex:1;">
+            <button type="button" class="hours-btn" id="openStudentModal">+</button>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="cancel-btn" id="cancelAttendanceFormBtn">Cancel</button>
+          <button type="submit" class="save-btn">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
   <script>
     // ========== CONFIG ==========
-    const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzZ9kOHQITPdEYcxAuogwc37E6HsxclB5blV5xXMBeV9b7GWuA4C_dhX1e__AGAZK6zxg/exec";
+    const BACKEND_URL = "https://script.google.com/macros/s/AKfycbyhte0yPOFZC8kuZETLt9WbuUqzduYMt1a328By8T6MpPFLIat2TOdMEQwIUemtKzIbTw/exec";
     // ============================
 
     let isEditMode = false;
