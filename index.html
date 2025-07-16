@@ -8,14 +8,14 @@
   <input type="file" id="fileInput" accept="image/*">
   <button onclick="uploadPhoto()">Upload</button>
   <p id="status"></p>
-
+  
 <script>
   async function uploadPhoto() {
     const fileInput = document.getElementById("fileInput");
     const file = fileInput.files[0];
 
     if (!file) {
-      alert("Please select a file!");
+      alert("Please select a file.");
       return;
     }
 
@@ -26,7 +26,7 @@
       const payload = `filename=${encodeURIComponent(file.name)}&mimeType=${encodeURIComponent(file.type)}&base64=${encodeURIComponent(base64Data)}`;
 
       try {
-        const res = await fetch("https://script.google.com/macros/s/AKfycbwuf9J_5wznqyJzAHDLerf4PG9wY4EIVZJl0QR2mgpWVddH9DCWfs7hyWuSiyM09Mh2Rg/exec", {
+        const res = await fetch("https://script.google.com/macros/s/AKfycbywCLoSJG-3QHc7jmHVnu6j2q1TXNXyTZ4G8QYv14zUz5aVEMwD8vTrngZXq3JfMenUWQ/exec", {
           method: "POST",
           headers: {
             "Content-Type": "application/x-www-form-urlencoded"
@@ -36,6 +36,10 @@
 
         const text = await res.text();
         document.getElementById("status").innerText = text;
+
+        // Reload after 3 seconds
+        setTimeout(() => location.reload(), 3000);
+
       } catch (err) {
         document.getElementById("status").innerText = "❌ Request failed: " + err.message;
       }
