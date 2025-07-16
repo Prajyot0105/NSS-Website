@@ -9,46 +9,40 @@
   <button onclick="uploadPhoto()">Upload</button>
   <p id="status"></p>
 
-  <script>
-    async function uploadPhoto() {
-      const input = document.getElementById("fileInput");
-      const file = input.files[0];
+<script>
+  async function uploadPhoto() {
+    const fileInput = document.getElementById("fileInput");
+    const file = fileInput.files[0];
 
-      if (!file) {
-        alert("Please select a file.");
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = async function (e) {
-        const base64 = e.target.result.split(',')[1]; // Remove data:image/...;base64,
-        const payload = {
-          filename: file.name,
-          mimeType: file.type,
-          base64: base64
-        };
-
-        try {
-          const res = await fetch("https://script.google.com/macros/s/AKfycbw1r-rjBe1gWX2IexHMQyIhj7WHKcy_nOfsYH-525LqdJ6Hu-5p_FH9q-VlzlhclwFxCg/exec", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          });
-
-          const result = await res.json();
-          if (result.status === "success") {
-            document.getElementById("status").innerHTML = 
-              `✅ Uploaded: <a href="${result.fileUrl}" target="_blank">${result.fileName}</a>`;
-          } else {
-            document.getElementById("status").innerText = "❌ Error: " + result.message;
-          }
-        } catch (err) {
-          document.getElementById("status").innerText = "❌ Request failed: " + err.message;
-        }
-      };
-
-      reader.readAsDataURL(file);
+    if (!file) {
+      alert("Please select a file!");
+      return;
     }
-  </script>
+
+    const reader = new FileReader();
+    reader.onload = async function (e) {
+      const base64Data = e.target.result.split(",")[1];
+
+      const payload = `filename=${encodeURIComponent(file.name)}&mimeType=${encodeURIComponent(file.type)}&base64=${encodeURIComponent(base64Data)}`;
+
+      try {
+        const res = await fetch("https://script.google.com/macros/s/AKfycbwuf9J_5wznqyJzAHDLerf4PG9wY4EIVZJl0QR2mgpWVddH9DCWfs7hyWuSiyM09Mh2Rg/exec", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: payload
+        });
+
+        const text = await res.text();
+        document.getElementById("status").innerText = text;
+      } catch (err) {
+        document.getElementById("status").innerText = "❌ Request failed: " + err.message;
+      }
+    };
+
+    reader.readAsDataURL(file);
+  }
+</script>
 </body>
 </html>
