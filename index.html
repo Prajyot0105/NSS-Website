@@ -338,7 +338,7 @@
           </div>
           <div class="form-field">
             <label>Geotagged Photos (Upload)</label>
-            <input type="file" name="geotaggedPhoto" accept="image/*" multiple>
+            <input type="file" name="geotaggedPhoto" accept="image/*">
             <div id="photoPreviewContainer"></div>
           </div>
         </div>
@@ -728,34 +728,30 @@
           document.getElementById('studentModal').style.display = 'flex';
         });
     }
+ 
+  // === PHOTO PREVIEW ===
+  document.addEventListener('DOMContentLoaded', function() {
+    const photoInput = document.querySelector('input[name="geotaggedPhoto"]');
+    const previewContainer = document.getElementById('photoPreviewContainer');
 
-    // === PHOTO PREVIEW ===
-    document.addEventListener('DOMContentLoaded', function() {
-      // Show/hide photo previews for multiple files
-      const photoInput = document.querySelector('input[name="geotaggedPhoto"]');
-      const previewContainer = document.getElementById('photoPreviewContainer');
-      photoInput.addEventListener('change', function() {
-        previewContainer.innerHTML = '';
-        if (photoInput.files && photoInput.files.length) {
-          Array.from(photoInput.files).forEach(file => {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-              const img = document.createElement('img');
-              img.src = e.target.result;
-              img.className = 'photo-preview';
-              img.style.display = 'block';
-              img.style.maxWidth = '100%';
-              img.style.maxHeight = '120px';
-              img.style.marginTop = '10px';
-              img.style.borderRadius = '4px';
-              previewContainer.appendChild(img);
-            };
-            reader.readAsDataURL(file);
-          });
-        }
-      });
+    photoInput.addEventListener('change', function() {
+      previewContainer.innerHTML = ''; // Clear previous previews
+
+      const file = photoInput.files[0]; // Only one file allowed
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          img.style.maxWidth = '100%';
+          img.style.height = 'auto';
+          img.style.marginTop = '10px';
+          previewContainer.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      }
     });
-
+  });
     // === UI EVENT HOOKS ===
     document.addEventListener('DOMContentLoaded', function() {
       // Navigation
