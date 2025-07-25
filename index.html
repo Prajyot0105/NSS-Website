@@ -418,7 +418,7 @@
 
   <script>
     // ========== CONFIG ==========
-    const BACKEND_URL = "https://script.google.com/macros/s/AKfycbyoIBDqnlAOCwEvi_ecwyWGhlVGy5SUMHeSfNz8jL6ABU8faO-8DXNLjN5ZffXYh4uViA/exec";
+    const BACKEND_URL = "https://script.google.com/macros/s/AKfycbxNRvi-ezZQDPrbena7bddQUljtwx1eCqxMaNP8e91jn79mID3qehs1Zm6lUmYL_Bh9bg/exec";
     // ============================
 
     let isEditMode = false;
@@ -604,50 +604,44 @@
 
     // === ATTENDANCE ===
     function loadAttendanceList() {
-      fetch(BACKEND_URL + '?method=getAttendanceRecords')
+      fetch(BACKEND_URL + '?method=getAllEventIds')
         .then(response => response.json())
-        .then(records => displayAttendanceList(Array.isArray(records) ? records : []))
+        .then(eventIds => displayAttendanceList(Array.isArray(eventIds) ? eventIds : []))
         .catch(err => alert('Error loading attendance records: ' + err));
     }
-    function displayAttendanceList(records) {
+    // Fetch present students for an event from the matrix
+    function fetchPresentStudents(eventId, callback) {
+      fetch(BACKEND_URL + '?method=getPresentStudentsMatrix&eventId=' + encodeURIComponent(eventId))
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            callback(data); // data is an array of enrollment numbers
+          } else {
+            alert(data.error || "Failed to fetch present students.");
+            callback([]);
+          }
+        });
+    }
+    // Display attendance list using matrix model
+    function displayAttendanceList(eventIds) {
       const list = document.getElementById('attendanceEventList');
       list.innerHTML = '';
-      if (!records.length) {
+      if (!eventIds.length) {
         list.innerHTML = '<div class="attendance-card">No attendance records found.</div>';
         return;
       }
-      records.forEach(record => {
-        const card = document.createElement('div');
-        card.className = 'attendance-card';
-        card.innerHTML = `
-          <div class="attendance-info">
-            <div class="attendance-event-id">${record.eventId}</div>
-            <div class="attendance-event-name">${record.presentStudents}</div>
-          </div>
-          <div class="attendance-actions">
-            <button class="attendance-action-btn edit-btn" title="Edit">&#9998;</button>
-            <button class="attendance-action-btn delete-btn" title="Delete">&#128465;</button>
-          </div>
-        `;
-        card.querySelector('.edit-btn').addEventListener('click', () => openAttendanceFormForEdit(record.eventId));
-        card.querySelector('.delete-btn').addEventListener('click', () => {
-          if (confirm('Delete this attendance record?')) {
-            const formData = new URLSearchParams();
-            formData.append('action', 'deleteAttendance');
-            formData.append('eventId', record.eventId);
-            
-            fetch(BACKEND_URL, {
-              method: 'POST',
-              body: formData
-            })
-            .then(res => res.json())
-            .then(res => {
-              if (res.status === "success") loadAttendanceList();
-              else alert(res.error || "Failed to delete attendance.");
-            });
-          }
+      eventIds.forEach(eventId => {
+        fetchPresentStudents(eventId, function(presentStudents) {
+          const card = document.createElement('div');
+          card.className = 'attendance-card';
+          card.innerHTML = `
+            <div class="attendance-info">
+              <div class="attendance-event-id">${eventId}</div>
+              <div class="attendance-event-name">${presentStudents.join(', ')}</div>
+            </div>
+          `;
+          list.appendChild(card);
         });
-        list.appendChild(card);
       });
     }
     function openAttendanceForm() {
@@ -668,36 +662,36 @@
           showPage('attendanceForm');
         });
     }
+    // No edit for matrix model, so hide edit/delete buttons in attendance list
     function openAttendanceFormForEdit(eventId) {
-      fetch(BACKEND_URL + '?method=getAttendanceRecord&eventId=' + encodeURIComponent(eventId))
-        .then(res => res.json())
-        .then(record => {
-          // Hide dropdown, show readonly field
-          document.getElementById('attendanceEventIdDropdownField').style.display = 'none';
-          document.getElementById('attendanceEventIdReadonlyField').style.display = 'block';
-          const form = document.getElementById('attendanceForm');
-          form.attendanceEditMode.value = "true";
-          form.attendanceEventIdReadonly.value = record.eventId;
-          form.presentStudents.value = record.presentStudents;
-          form.attendanceEventId.removeAttribute('required');
-          showPage('attendanceForm');
-        });
+      // Not needed for matrix model, but could prefill present students if desired
+      fetchPresentStudents(eventId, function(presentStudents) {
+        document.getElementById('attendanceEventIdDropdownField').style.display = 'none';
+        document.getElementById('attendanceEventIdReadonlyField').style.display = 'block';
+        const form = document.getElementById('attendanceForm');
+        form.attendanceEditMode.value = "true";
+        form.attendanceEventIdReadonly.value = eventId;
+        form.presentStudents.value = presentStudents.join(',');
+        form.attendanceEventId.removeAttribute('required');
+        showPage('attendanceForm');
+      });
     }
+    // Use matrix model for attendance marking
     function handleAttendanceFormSubmit(e) {
       e.preventDefault();
       const form = document.getElementById('attendanceForm');
       const isEdit = form.attendanceEditMode.value === "true";
       const eventId = isEdit ? form.attendanceEventIdReadonly.value : form.attendanceEventId.value;
-      const attendanceData = {
-        action: isEdit ? "updateAttendance" : "saveAttendance",
-        eventId: eventId,
-        presentStudents: form.presentStudents.value
-      };
+      // Get present students as an array
+      const presentStudentsArr = form.presentStudents.value
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+      // Use the new matrix API
       const formData = new URLSearchParams();
-      formData.append('action', attendanceData.action);
-      formData.append('eventId', attendanceData.eventId);
-      formData.append('presentStudents', attendanceData.presentStudents);
-
+      formData.append('action', 'markAttendanceMatrix');
+      formData.append('eventId', eventId);
+      formData.append('presentEnrollmentNumbers', JSON.stringify(presentStudentsArr));
       fetch(BACKEND_URL, {
         method: "POST",
         body: formData
